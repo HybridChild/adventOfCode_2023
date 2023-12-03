@@ -1,15 +1,15 @@
 import os
 import re
 
-
 class EnginePart:
-    def __init__(self, line, num, startPos, endPos):
-        self.line = line
-        self.number = num
+    def __init__(self, lineNumber, number, startPos, endPos):
+        self.lineNumber = lineNumber
+        self.number = number
         self.startPos = startPos
         self.endPos = endPos
         self.symbol = ''
-    
+        self.symbolPos = []
+
 
 def findNumbersWithPositions(input_string):
     # Define a regular expression pattern to match numbers
@@ -27,27 +27,30 @@ def findNumbersWithPositions(input_string):
 def scanCircumferenceForSymbol(part, map):
     # Check left
     if part.startPos > 0:
-        if map[part.line][part.startPos - 1] != '.':
-            part.symbol = map[part.line][part.startPos - 1]
+        if map[part.lineNumber][part.startPos - 1] != '.':
+            part.symbol = map[part.lineNumber][part.startPos - 1]
+            part.symbolPos = [part.lineNumber, part.startPos - 1]
             return
     # Check right
     if part.endPos < len(map[0]):
-        if map[part.line][part.endPos] != '.':
-            part.symbol = map[part.line][part.endPos]
+        if map[part.lineNumber][part.endPos] != '.':
+            part.symbol = map[part.lineNumber][part.endPos]
+            part.symbolPos = [part.lineNumber, part.endPos]
             return
     # Check top and bottom
     startPos = part.startPos - 1 if part.startPos > 0 else 0
     endPos = part.endPos if part.endPos < len(map[0]) else part.endPos - 1
     for i in range(startPos, endPos + 1):
-        if part.line > 0:
-            if map[part.line - 1][i] != '.':
-                part.symbol = map[part.line - 1][i]
+        if part.lineNumber > 0:
+            if map[part.lineNumber - 1][i] != '.':
+                part.symbol = map[part.lineNumber - 1][i]
+                part.symbolPos = [part.lineNumber - 1, i]
                 return
-        if part.line < len(map) - 1:
-            if map[part.line + 1][i] != '.':
-                part.symbol = map[part.line + 1][i]
+        if part.lineNumber < len(map) - 1:
+            if map[part.lineNumber + 1][i] != '.':
+                part.symbol = map[part.lineNumber + 1][i]
+                part.symbolPos = [part.lineNumber + 1, i]
                 return
-
 
 # --- Start here ---
 scriptDir = os.path.dirname(__file__)
@@ -72,3 +75,18 @@ for i, line in enumerate(engineSchematic):
             partSum += tmpPart.number
 
 print('Part 1: ' + str(partSum))
+
+# Part 2
+gearDict = {}
+for part in enginePartList:
+    if part.symbol == '*':
+        if str(part.symbolPos) not in gearDict.keys():
+            gearDict[str(part.symbolPos)] = []
+        gearDict[str(part.symbolPos)].append(part)
+
+gearRatioSum = 0
+for gearKey in gearDict.keys():
+    if len(gearDict[gearKey]) == 2:
+        gearRatioSum += gearDict[gearKey][0].number * gearDict[gearKey][1].number
+
+print('Part 2: ' + str(gearRatioSum))

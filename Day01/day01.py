@@ -55,5 +55,5 @@ for line in inputList:
     digitStringPositionList.append([digPos1, digPos2])
 
 
-print('Part 1 answer: ' + str(sum(calibrationDigitValueList)))
-print('Part 2 answer: ' + str(sum(calibrationDigitStringValueList)))
+print('Part 1: ' + str(sum(calibrationDigitValueList)))
+print('Part 2: ' + str(sum(calibrationDigitStringValueList)))

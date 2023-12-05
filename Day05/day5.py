@@ -21,15 +21,33 @@ def convertByMap(inputValue, convMap):
     return inputValue
 
 
+def reverseByMap(inputValue, convMap):
+    for convRange in convMap:
+        if convRange['destination start'] <= inputValue < (convRange['destination start'] + convRange['length']):
+            return convRange['source start'] + (inputValue - convRange['destination start'])
+    return inputValue
+
+
 def findSeedProperties(seedNumber, almanac):
     seed                = {'seedNumber': seedNumber}
-    seed['soil']        = convertByMap(seed['seedNumber'], almanac['seed-to-soil map'])
-    seed['fertilizer']  = convertByMap(seed['soil'], almanac['soil-to-fertilizer map'])
-    seed['water']       = convertByMap(seed['fertilizer'], almanac['fertilizer-to-water map'])
-    seed['light']       = convertByMap(seed['water'], almanac['water-to-light map'])
-    seed['temperature'] = convertByMap(seed['light'], almanac['light-to-temperature map'])
+    seed['soil']        = convertByMap(seed['seedNumber'] , almanac['seed-to-soil map'])
+    seed['fertilizer']  = convertByMap(seed['soil']       , almanac['soil-to-fertilizer map'])
+    seed['water']       = convertByMap(seed['fertilizer'] , almanac['fertilizer-to-water map'])
+    seed['light']       = convertByMap(seed['water']      , almanac['water-to-light map'])
+    seed['temperature'] = convertByMap(seed['light']      , almanac['light-to-temperature map'])
     seed['humidity']    = convertByMap(seed['temperature'], almanac['temperature-to-humidity map'])
-    seed['location']    = convertByMap(seed['humidity'], almanac['humidity-to-location map'])
+    seed['location']    = convertByMap(seed['humidity']   , almanac['humidity-to-location map'])
+    return seed
+
+def findSeedByLocation(location, almanac):
+    seed                = {'location': location}
+    seed['humidity']    = reverseByMap(seed['location']   , almanac['humidity-to-location map'])
+    seed['temperature'] = reverseByMap(seed['humidity']   , almanac['temperature-to-humidity map'])
+    seed['light']       = reverseByMap(seed['temperature'], almanac['light-to-temperature map'])
+    seed['water']       = reverseByMap(seed['light']      , almanac['water-to-light map'])
+    seed['fertilizer']  = reverseByMap(seed['water']      , almanac['fertilizer-to-water map'])
+    seed['soil']        = reverseByMap(seed['fertilizer'] , almanac['soil-to-fertilizer map'])
+    seed['seedNumber']  = reverseByMap(seed['soil']       , almanac['seed-to-soil map'])
     return seed
 
 
@@ -72,14 +90,21 @@ for seedNumber in almanac['seeds']:
 print('Part 1: ' + str(min(locationList)))
 
 # Part 2
-locationList = []
+rangeList = []
 i = 0
 while i < len(almanac['seeds']):
     seedStart = almanac['seeds'][i]
     seedRange = almanac['seeds'][i+1]
-    for seedNum in range(seedStart, seedStart + seedRange):
-        seed = findSeedProperties(seedNum, almanac)
-        locationList.append(seed['location'])
+    rangeList.append([seedStart, seedStart + seedRange])
     i += 2
 
-print('Part 2: ' + str(min(locationList)))
+location = -1
+done = False
+while not done:
+    location += 1
+    seed = findSeedByLocation(location, almanac)
+    for ran in rangeList:
+        if ran[0] <= seed['seedNumber'] < ran[1]:
+            done = True
+
+print('Part 2: ' + str(location))

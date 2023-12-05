@@ -14,9 +14,16 @@ def find_numbers(input_string):
     return result
 
 
+def convertByMap(inputValue, convMap):
+    for convRange in convMap:
+        if convRange['source start'] <= inputValue < (convRange['source start'] + convRange['length']):
+            return convRange['destination start'] + (inputValue - convRange['source start'])
+    return inputValue
+
+
 # --- Start here ---
 scriptDir = os.path.dirname(__file__)
-relFilePath = 'example.txt'
+relFilePath = 'input.txt'
 absFilePath = os.path.join(scriptDir, relFilePath)
 
 with open(absFilePath) as inputFile:
@@ -42,6 +49,21 @@ for line in almanacStrList:
         lastMapTitle = line[:-1]
     elif line != '':
         newRange = find_numbers(line)
-        almanac[lastMapTitle].append({'destination range start': newRange[0], 'source range start': newRange[1], 'range length': newRange[2]})
+        almanac[lastMapTitle].append({'destination start': newRange[0], 'source start': newRange[1], 'length': newRange[2]})
 
 # Part 1
+seedPropertyList = []
+locationList = []
+for seedNumber in almanac['seeds']:
+    seedProperty                = {'seedNumber': seedNumber}
+    seedProperty['soil']        = convertByMap(seedProperty['seedNumber'], almanac['seed-to-soil map'])
+    seedProperty['fertilizer']  = convertByMap(seedProperty['soil'], almanac['soil-to-fertilizer map'])
+    seedProperty['water']       = convertByMap(seedProperty['fertilizer'], almanac['fertilizer-to-water map'])
+    seedProperty['light']       = convertByMap(seedProperty['water'], almanac['water-to-light map'])
+    seedProperty['temperature'] = convertByMap(seedProperty['light'], almanac['light-to-temperature map'])
+    seedProperty['humidity']    = convertByMap(seedProperty['temperature'], almanac['temperature-to-humidity map'])
+    seedProperty['location']    = convertByMap(seedProperty['humidity'], almanac['humidity-to-location map'])
+    seedPropertyList.append(seedProperty)
+    locationList.append(seedProperty['location'])
+
+print('Part 1: ' + str(min(locationList)))

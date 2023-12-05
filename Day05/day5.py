@@ -21,6 +21,18 @@ def convertByMap(inputValue, convMap):
     return inputValue
 
 
+def findSeedProperties(seedNumber, almanac):
+    seed                = {'seedNumber': seedNumber}
+    seed['soil']        = convertByMap(seed['seedNumber'], almanac['seed-to-soil map'])
+    seed['fertilizer']  = convertByMap(seed['soil'], almanac['soil-to-fertilizer map'])
+    seed['water']       = convertByMap(seed['fertilizer'], almanac['fertilizer-to-water map'])
+    seed['light']       = convertByMap(seed['water'], almanac['water-to-light map'])
+    seed['temperature'] = convertByMap(seed['light'], almanac['light-to-temperature map'])
+    seed['humidity']    = convertByMap(seed['temperature'], almanac['temperature-to-humidity map'])
+    seed['location']    = convertByMap(seed['humidity'], almanac['humidity-to-location map'])
+    return seed
+
+
 # --- Start here ---
 scriptDir = os.path.dirname(__file__)
 relFilePath = 'input.txt'
@@ -52,18 +64,22 @@ for line in almanacStrList:
         almanac[lastMapTitle].append({'destination start': newRange[0], 'source start': newRange[1], 'length': newRange[2]})
 
 # Part 1
-seedPropertyList = []
 locationList = []
 for seedNumber in almanac['seeds']:
-    seedProperty                = {'seedNumber': seedNumber}
-    seedProperty['soil']        = convertByMap(seedProperty['seedNumber'], almanac['seed-to-soil map'])
-    seedProperty['fertilizer']  = convertByMap(seedProperty['soil'], almanac['soil-to-fertilizer map'])
-    seedProperty['water']       = convertByMap(seedProperty['fertilizer'], almanac['fertilizer-to-water map'])
-    seedProperty['light']       = convertByMap(seedProperty['water'], almanac['water-to-light map'])
-    seedProperty['temperature'] = convertByMap(seedProperty['light'], almanac['light-to-temperature map'])
-    seedProperty['humidity']    = convertByMap(seedProperty['temperature'], almanac['temperature-to-humidity map'])
-    seedProperty['location']    = convertByMap(seedProperty['humidity'], almanac['humidity-to-location map'])
-    seedPropertyList.append(seedProperty)
-    locationList.append(seedProperty['location'])
+    seed = findSeedProperties(seedNumber, almanac)
+    locationList.append(seed['location'])
 
 print('Part 1: ' + str(min(locationList)))
+
+# Part 2
+locationList = []
+i = 0
+while i < len(almanac['seeds']):
+    seedStart = almanac['seeds'][i]
+    seedRange = almanac['seeds'][i+1]
+    for seedNum in range(seedStart, seedStart + seedRange):
+        seed = findSeedProperties(seedNum, almanac)
+        locationList.append(seed['location'])
+    i += 2
+
+print('Part 2: ' + str(min(locationList)))

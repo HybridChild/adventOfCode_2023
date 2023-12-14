@@ -1,5 +1,26 @@
 import os
-import copy
+
+def tiltNorth(tileMap):
+    for row in range(tileMap['dimensions'][0]):
+        for col in range(tileMap['dimensions'][1]):
+            if tileMap[str([row, col])] == 'O':
+                rolling = True
+                tmpRow = row
+                while rolling:
+                    if tmpRow > 0 and tileMap[str([tmpRow-1, col])] == '.':
+                        tileMap[str([tmpRow-1, col])] = 'O'
+                        tileMap[str([tmpRow, col])] = '.'
+                        tmpRow -= 1
+                    else:
+                        rolling = False
+
+def calculateNorthLoad(tileMap):
+    load = 0
+    for row in range(tileMap['dimensions'][0]):
+        for col in range(tileMap['dimensions'][1]):
+            if tileMap[str([row, col])] == 'O':
+                load += tileMap['dimensions'][0] - row
+    return load
 
 # --- Start here ---
 scriptDir = os.path.dirname(__file__)
@@ -10,33 +31,12 @@ with open(absFilePath) as inputFile:
     inputList = inputFile.read().splitlines()
 
 # Parse input
-rockList = []
-tileMap = {}
+tileMap = {'dimensions': [len(inputList), len(inputList[0])]}
 for i, line in enumerate(inputList):
     for j, pos in enumerate(line):
         tileMap[str([i, j])] = inputList[i][j]
-        if inputList[i][j] != '.':
-            rockList.append({'type': inputList[i][j], 'pos': [i, j]})
-
-# Tilt north
-for i, rock in enumerate(rockList):
-    rock = copy.deepcopy(rockList[i])
-    if rock['type'] == 'O':
-        rolling = True
-        while rolling:
-            if rock['pos'][0] > 0 and tileMap[str([rock['pos'][0]-1, rock['pos'][1]])] == '.':
-                tileMap[str([rock['pos'][0]-1, rock['pos'][1]])] = 'O'
-                tileMap[str([rock['pos'][0], rock['pos'][1]])] = '.'
-                rockList[i]['pos'][0] -= 1
-                rock['pos'][0] -= 1
-            else:
-                rolling = False
-
-# Calculate load
-load = 0
-for rock in rockList:
-    if rock['type'] == 'O':
-        load += len(inputList) - rock['pos'][0]
 
 # Part 1
+tiltNorth(tileMap)
+load = calculateNorthLoad(tileMap)
 print('Part 1: ' + str(load))
